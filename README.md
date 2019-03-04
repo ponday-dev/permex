@@ -1,7 +1,8 @@
 # Permex
 
 ```markdown
-**Caution** Permex is in development. It is proposal yet, so this repository will may be archived.
+# Caution
+Permex is in development. It is proposal yet, so this repository will may be archived.
 ```
 
 Permex is library that to controll permissions.
