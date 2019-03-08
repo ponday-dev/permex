@@ -1,14 +1,31 @@
 defmodule Permex do
-  defmacro permission(key) do
-      quote do
-          permission(unquote(key), Permex.Resolver.NoopResolver)
-      end
+  alias Permex.Resolver.NoopResolver
+
+  defmacro scope(key, resolver \\ NoopResolver, do: do_claus) do
+    context = expand(key, do_claus)
+    quote do
+      permission unquote(key), unquote(resolver)
+
+      unquote(context)
+    end
   end
-  defmacro permission(key, resolver) do
+
+  def expand(key, {:__block__, _, lines}) do
+    lines |> Enum.map(fn line -> expand(key, line) end)
+  end
+  def expand(key, {:permission, num, [permission_name | params]}) do
+    child_permission = :"#{to_string(key)}_#{permission_name |> to_string()}"
+    {:permission, num, [child_permission | params]}
+  end
+  def expand(_, line), do: line
+
+  defmacro permission(key, resolver \\ NoopResolver)
+  defmacro permission(key, resolver) when is_atom(key) do
       quote do
           def resolve(unquote(key), payload), do: apply(unquote(resolver), :perform, [payload])
       end
   end
+  defmacro permission(_, _), do: nil
 
   defmacro __using__(_) do
       quote do
